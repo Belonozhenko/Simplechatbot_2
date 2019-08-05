@@ -12,6 +12,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def fetch_messages(self, data):
         messages = Message.last_100_messages(data)
 
+        curnt_user = self.scope["user"]
         if messages:
             for message in messages:
                 await self.channel_layer.group_send(
@@ -19,7 +20,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     {
                         'type': 'chat_message',
                         'message': message.content,
-                        'user': str(message.autor)
+                        'user': str(message.autor),
+                        'conecting_user': str(curnt_user),
+                        'is_history': 'history',
+
                     }
                 )
 
@@ -66,7 +70,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
         await self.accept()
-        await self.fetch_messages(self)
+
+
+        await self.fetch_messages(self,)
 
 
     async def disconnect(self, close_code):
@@ -89,7 +95,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             {
                 'type': 'chat_message',
                 'message': message,
-                'user': user
+                'user': user,
+                'conecting_user':'',
+                'is_history': '',
             }
         )
         message = Message.objects.create(
@@ -100,9 +108,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         message = event['message']
         user = event['user']
+
+
+
         # Send message to WebSocket
+
+        cun_user = event['conecting_user']
+        is_hist = event['is_history']
         await self.send(text_data=json.dumps({
             'message': message,
-            'user': user
+            'user': user,
+            'conecting_user': str(cun_user),
+            'is_history': is_hist,
         }))
+
+
 

@@ -36,9 +36,12 @@
         var data = JSON.parse(e.data);
         var message = data['message'];
         var sender = data['user'];
-        if(sender==users){
-            document.querySelector('#chat-log').value += (sender + ': ' + message +  '\n');
-        }else{
+        var conns_user = data['conecting_user'];
+        var is_history = data['is_history'];
+        console.log(e.data);
+        if(conns_user == users && is_history == 'history'){
+            document.querySelector('#chat-log').value += (sender + ': ' + message + '\n');
+        }else if (is_history != 'history'){
             document.querySelector('#chat-log').value += (sender + ': ' + message + '\n');
         }
 
@@ -62,7 +65,8 @@
 
         chatSocket.send(JSON.stringify({
             'message':  message,
-            'user': users
+            'user': users,
+            'new_con_user': '',
         }));
 
         messageInputDom.value = '';
