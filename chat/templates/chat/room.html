@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="breadcrumbs">
+ {% if user.is_authenticated %}
+
+        Welcome, {{ user.get_username }}. Thanks for logging in.
+
+
+{% else %}
+    <p>Welcome, Noname user. Please <a href="{% url 'login' %}"> Log in</a>.</p>
+{% endif %}
+    </div>
+        <div align="right" width="50%">
+         <a href="{% url 'logout' %}"> Log out</a>
+     </div>
+
+    <p></p>
+    <textarea id="chat-log" cols="100" rows="20"></textarea><br/>
+     <p></p>
+    <input id="chat-message-input" type="text" size="100"/><br/>
+    <p></p>
+    <input id="chat-message-submit" type="button" value="Send"/>
+</body>
+<script>
+
+    var users = '{{user.username}}';
+    var roomName = {{ room_name_json }};
+
+    var chatSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/chat/' + roomName + '/');
+
+    chatSocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        var message = data['message'];
+        var sender = data['user'];
+        if(sender==users){
+            document.querySelector('#chat-log').value += (sender + ': ' + message +  '\n');
+        }else{
+            document.querySelector('#chat-log').value += (sender + ': ' + message + '\n');
+        }
+
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        var messageInputDom = document.querySelector('#chat-message-input');
+        var message = messageInputDom.value;
+
+
+        chatSocket.send(JSON.stringify({
+            'message':  message,
+            'user': users
+        }));
+
+        messageInputDom.value = '';
+    };
+
+</script>
+{% endblock %}

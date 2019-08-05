@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load crispy_forms_tags %}
+
+<div align="center">
+
+    <h1>Helo this is simple chat homepage</h1>
+    <h2>
+    <b>Please</b>
+        <a href="{% url 'login' %}">Log In</a>
+        <b>Or</b>
+        <a href="{% url 'signup' %}"> Register </a>
+    </h2>
+</div>
+
+
+
+{% endblock %}
